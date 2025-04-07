@@ -2,6 +2,8 @@ import pygame as pg
 from ext.wikipedia import WikipediaGame
 from ext.animation import StarBouncing
 from time import perf_counter
+pg.mixer.init()
+MIXER = pg.mixer.music
 class App:
     WIDTH = 1280
     HEIGHT = 720
@@ -14,6 +16,8 @@ class App:
         self.wiki = WikipediaGame()
         self.font = pg.font.Font(pg.font.get_default_font(),40)
         self.star_texture = pg.transform.scale(pg.image.load("bin\\img\\star.png"),(48,48))
+        self.nostar_texture = pg.transform.scale(pg.image.load("bin\\img\\nostar.png"),(48,48))
+        
         self.start_bounce_animation_star1 = StarBouncing()
         self.start_bounce_animation_star2 = StarBouncing(25)
         self.start_bounce_animation_star3 = StarBouncing(50)
@@ -28,9 +32,9 @@ class App:
                 case 0:
                     self.word_guess()
             self.delta_time = perf_counter() - dt
-            self.WINDOW.blit(self.star_texture,((self.WIDTH//2)-(self.star_texture.get_width()//2),150+(-self.star_texture.get_height()*.5*self.start_bounce_animation_star2.update())))
-            self.WINDOW.blit(self.star_texture,((self.WIDTH//2)-((self.star_texture.get_width())*2),150+(self.star_texture.get_height()*.5)+(-self.star_texture.get_height()*.5*self.start_bounce_animation_star1.update())))
-            self.WINDOW.blit(self.star_texture,((self.WIDTH//2)+((self.star_texture.get_width())),150+(self.star_texture.get_height()*.5)+(-self.star_texture.get_height()*.5*self.start_bounce_animation_star3.update())))
+            self.WINDOW.blit(self.star_texture if self.wiki.remaining >= 2 else self.nostar_texture,((self.WIDTH//2)-(self.star_texture.get_width()//2),150+(-self.star_texture.get_height()*.5*self.start_bounce_animation_star2.update())))
+            self.WINDOW.blit(self.star_texture if self.wiki.remaining >= 1 else self.nostar_texture,((self.WIDTH//2)-((self.star_texture.get_width())*2),150+(self.star_texture.get_height()*.5)+(-self.star_texture.get_height()*.5*self.start_bounce_animation_star1.update())))
+            self.WINDOW.blit(self.star_texture if self.wiki.remaining >= 3 else self.nostar_texture,((self.WIDTH//2)+((self.star_texture.get_width())),150+(self.star_texture.get_height()*.5)+(-self.star_texture.get_height()*.5*self.start_bounce_animation_star3.update())))
             
             pg.display.update()
             self.check_events()
@@ -63,7 +67,7 @@ class App:
             (0,0,self.WIDTH,self.HEIGHT)
             )
         
-        self.draw_title_bar()
+        self.draw_title_bar(input_draw)
         
         w_calc = (len(input_draw) if input_draw else 1)*1.1*self.font.get_height()
         
@@ -80,10 +84,24 @@ class App:
             if event.type == pg.QUIT:
                 pg.quit()
             if event.type == pg.KEYDOWN:
-                if event.key == pg.K_RETURN:
+                if event.key == pg.K_RETURN and self.inp:
                     score = self.wiki.end_word_count(int(self.inp))
-                    print(score,self.wiki.wc)
-                    self.wiki.start_word_count()
+                    print(score)
+                    if not self.wiki.remaining:
+                        MIXER.load("bin\\nope.wav")
+                        MIXER.play()
+                        self.inp = ""
+                        self.wiki.start_word_count()
+                    elif score:
+                        MIXER.load("bin\\yay.wav")
+                        MIXER.play()
+                        self.wiki.points += score
+                        self.inp = ""
+                        self.wiki.start_word_count()
+                    else:
+                        MIXER.load("bin\\nope.wav")
+                        MIXER.play()
+                    
                 if event.key == pg.K_BACKSPACE:
                     self.inp = self.inp[:-1]
                     continue

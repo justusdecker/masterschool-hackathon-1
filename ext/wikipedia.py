@@ -21,8 +21,7 @@ def get_wiki_text(link: str) -> str:
     return soup.text    #Remove HTML text. Returns only text
 
 def get_wiki_links(link: str) -> list[str,str]:
-    soup = get_soup(link)
-    found = soup.find_all("a")
+    found = get_soup(link).find_all("a")
     links = []
     for i in found:
         link = i.get("href")
@@ -31,7 +30,7 @@ def get_wiki_links(link: str) -> list[str,str]:
         if not i.attrs['href']: continue
         
         links.append((str(i.attrs['href']),i.text)) #HREF Link & the text in the current element
-        
+
     return links
 
 def get_wiki_text_exclude(link: str,words: Iterable[str]):
@@ -40,20 +39,24 @@ def get_wiki_text_exclude(link: str,words: Iterable[str]):
         text.remove(word)
     return " ".join(text)
         
-
 class WikipediaGame:
     def __init__(self):
         self.current_game = 0
         self.wc = 0
         self.current_page = ""
+        self.remaining = 3
+        self.points = 0
+        
     def get_challenge_title(self):
         match self.current_game:
             case 0:
                 return f"How many words has the {self.current_page} page?"
     def start_word_count(self):
+        self.remaining = 3
         self.wc = get_wiki_text(LINKS[0]).count(" ") + 1
         self.current_page = LINKS[0].split("/")[-1]
     def end_word_count(self,inp:int) -> bool:
+        self.remaining -= 1
         if inp == self.wc: return 3
         elif inp < self.wc * 1.1 and inp > self.wc * 0.9: return 2
         elif inp < self.wc * 1.2 and inp > self.wc * 0.8: return 1
