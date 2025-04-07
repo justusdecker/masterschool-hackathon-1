@@ -15,7 +15,6 @@ class App:
     def run(self):
         self.wiki.start_word_count()
         while self.is_running:
-            
             match self.wiki.current_game:
                 case 0:
                     self.word_guess()
@@ -23,13 +22,18 @@ class App:
             pg.display.update()
             self.check_events()
     def word_guess(self):
+        hw,hh = self.WIDTH//2 , self.HEIGHT//2
         self.WINDOW.fill(pg.Color("#e85f58"),(0,0,self.WIDTH,self.HEIGHT))
         title_font = self.font.render(self.wiki.get_challenge_title(),True,pg.Color("#242424"))
-        pg.draw.rect(self.WINDOW,pg.Color("#fcfcfc"),(self.WIDTH * .1,self.HEIGHT//16,(self.WIDTH*.8),self.HEIGHT//8),border_radius=15)
-        self.WINDOW.blit(title_font,((self.WIDTH//2) - (title_font.get_width()//2),(self.HEIGHT//8) - (title_font.get_height()//2)))
+        pg.draw.rect(self.WINDOW,pg.Color("#fcfcfc"),((self.WIDTH * .1),self.HEIGHT//16,(self.WIDTH*.8),self.HEIGHT//8),border_radius=15)
         
-        font = self.font.render(self.inp,True,pg.Color("#fcfcfc"))
-        self.WINDOW.blit(font,((self.WIDTH//2) - (font.get_width()//2),(self.HEIGHT//2) - (font.get_height()//2)))
+        self.WINDOW.blit(title_font,(hw - (title_font.get_width()//2),(self.HEIGHT//8) - (title_font.get_height()//2)))
+        
+        w_calc = (len(self.inp) if self.inp else 1)*1.1*self.font.get_height()
+        pg.draw.rect(self.WINDOW,pg.Color("#fcfcfc"),(hw - (w_calc//2),hh - (self.font.get_height() * 1.1),w_calc,(self.font.get_height() * 1.1)*2),border_radius=15)
+        font = self.font.render(self.inp,True,pg.Color("#242424"))
+        
+        self.WINDOW.blit(font,(hw - (font.get_width()//2),hh - (font.get_height()//2)))
     def more_or_less(self):
         self.WINDOW.fill(pg.Color("#e85f58"),(0,0,self.WIDTH // 2,self.HEIGHT))
         self.WINDOW.fill(pg.Color("#58c8e8"),(self.WIDTH // 2,0,self.WIDTH,self.HEIGHT))
