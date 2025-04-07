@@ -8,8 +8,14 @@ def get_wiki(search):
     
     found = soup.find_all("div", class_="mw-content-ltr")
     found = soup.find_all("a")
+    links = {}
     for i in found:
         link,text = i.get("href"),i.get("contents")
         if not link: continue
-        print("\n" , i.text)
+        
+        if not i.attrs['href']: continue
+        links[str(i.attrs['href'])] = i.text
+    print(links)
+    
+
 get_wiki("Minecraft")
