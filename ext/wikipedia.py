@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-
+from ext.wiki_links import LINKS
 """
 WFAPI - Wikipedia fetching API
 (c) 2025 - Justus Decker
@@ -32,4 +32,21 @@ def get_wiki_links(link: str) -> list[str,str]:
         
     return links
 
-print(get_wiki_text("https://de.wikipedia.org/wiki/Minecraft"))
+class WikipediaGame:
+    def __init__(self):
+        self.current_game = 0
+        self.wc = 0
+        self.current_page = ""
+    def get_challenge_title(self):
+        match self.current_game:
+            case 0:
+                return f"How many words has the {self.current_page} page?"
+    def start_word_count(self):
+        self.wc = get_wiki_text(LINKS[0]).count(" ") + 1
+        self.current_page = LINKS[0].split("/")[-1]
+    def end_word_count(self,inp:int) -> bool:
+        if inp == self.wc: return 3
+        elif inp < self.wc * 1.1 and inp > self.wc * 0.9: return 2
+        elif inp < self.wc * 1.2 and inp > self.wc * 0.8: return 1
+        else: return 0
+        
