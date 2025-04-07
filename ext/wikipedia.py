@@ -66,7 +66,13 @@ class WikipediaGame:
         self.current_page = page.split("/")[-1]
     def reset_and_drive(self):
         new_path = get_wiki_links(self.current_page)
-        LINKS.append(new_path[randint(0,len(new_path)-1)])
+        title = ""
+        while not title:
+            title = new_path[randint(0,len(new_path)-1)]
+            if len(title) + 29 < 42:
+                LINKS.append(title)
+            else:
+                title = ""
     def end_word_count(self,inp:int) -> bool:
         
         self.remaining -= 1

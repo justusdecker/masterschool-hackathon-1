@@ -4,11 +4,13 @@ from ext.animation import StarBouncing
 from time import perf_counter
 from random import randint
 pg.mixer.init()
-MIXER = pg.mixer.music
+MIXER = pg.mixer.Sound
 class App:
     WIDTH = 1280
     HEIGHT = 720
     WINDOW = pg.display.set_mode((WIDTH,HEIGHT))
+    pg.display.set_caption("Project: WIN")
+    pg.display.set_icon(pg.image.load("logo.ico"))
     is_running = True
     CLK = pg.Clock()
     def __init__(self):
@@ -31,6 +33,8 @@ class App:
         
     def run(self):
         self.wiki.start_word_count()
+        pg.mixer.music.load("bin\\bgm.mp3")
+        pg.mixer.music.play(-1)
         while self.is_running:
             dt = perf_counter()
             self.CLK.tick(30)
@@ -61,8 +65,6 @@ class App:
                 self.animation_pos_2 = self.WIDTH
                 self.ani_wait_2 = randint(0,4)
             
-        
-        
     def draw_stars(self):
         star_height = self.star_texture.get_height() *.5
             
@@ -80,7 +82,7 @@ class App:
     def draw_input(self) -> None:
         pass
     
-    def draw_title_bar(self,title:str) -> None:
+    def draw_title_bar(self) -> None:
         pg.draw.rect(
             self.WINDOW,
             pg.Color("#fcfcfc"),
@@ -116,7 +118,7 @@ class App:
         
         self.draw_background()
         
-        self.draw_title_bar(input_draw)
+        self.draw_title_bar()
         
         w_calc = (len(input_draw) if input_draw else 1)*1.1*self.font.get_height()
         
@@ -137,22 +139,19 @@ class App:
                 if event.key == pg.K_RETURN and self.inp:
                     score = self.wiki.end_word_count(int(self.inp))
                     if not self.wiki.remaining:
-                        MIXER.load("bin\\nope.wav")
-                        MIXER.play()
+                        MIXER("bin\\nope.wav").play()
                         self.inp = ""
                         self.wiki.start_word_count()
                         self.wiki.reset_and_drive()
                     elif score:
-                        MIXER.load("bin\\yay.wav")
-                        MIXER.play()
+                        MIXER("bin\\yay.wav").play()
                         self.wiki.points += score
                         self.inp = ""
                         self.wiki.start_word_count()
                         self.wiki.reset_and_drive()
                     else:
                         
-                        MIXER.load("bin\\nope.wav")
-                        MIXER.play()
+                        MIXER("bin\\nope.wav").play()
                     
                 if event.key == pg.K_BACKSPACE:
                     self.inp = self.inp[:-1]
