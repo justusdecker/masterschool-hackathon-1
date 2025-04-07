@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from ext.wiki_links import LINKS
+from typing import Iterable
 """
 WFAPI - Wikipedia fetching API
 (c) 2025 - Justus Decker
@@ -14,6 +15,7 @@ def get_soup(link:str) -> BeautifulSoup:
         requests.get(f"{link}").content, 
         "html.parser"
         )
+    
 def get_wiki_text(link: str) -> str:
     soup = get_soup(link)
     return soup.text    #Remove HTML text. Returns only text
@@ -31,6 +33,13 @@ def get_wiki_links(link: str) -> list[str,str]:
         links.append((str(i.attrs['href']),i.text)) #HREF Link & the text in the current element
         
     return links
+
+def get_wiki_text_exclude(link: str,words: Iterable[str]):
+    text = get_wiki_text(link).split()
+    for word in words:
+        text.remove(word)
+    return " ".join(text)
+        
 
 class WikipediaGame:
     def __init__(self):
