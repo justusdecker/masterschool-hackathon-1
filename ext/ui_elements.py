@@ -1,5 +1,5 @@
 from pygame import Color,Font,Surface,draw,mouse,SRCALPHA
-from ext.tileset_font import FONT_M
+from ext.tileset_font import FONT
 class Button:
     def __init__(self,text:str):
         self.text = text
@@ -8,20 +8,20 @@ class Button:
     def reset_press(self):
         self.pressed = False
     def draw_only(self,surf:Surface,hw,hh):
-        fh = FONT_M.char_array[0].get_height()
+        fh = FONT.char_array[0].get_height()
         wc = (len(str(self.text)))*1.1*fh
-        rendered_font = FONT_M.render_text(str(self.text))
+        rendered_font = FONT.render_text(str(self.text))
         w , h = wc,fh * 1.1*2
         tmp = Surface((w,h),SRCALPHA)
         draw.rect(tmp,Color("#fcfcfc"),(0,0,w,h),border_radius=15)
         tmp.blit(rendered_font,((w//2) - (rendered_font.get_width()//2),(h // 2) - (rendered_font.get_height()//2)))
         surf.blit(tmp,(hw - (tmp.get_width()//2),hh - (tmp.get_height()//2)))
     def draw_all(self,surf:Surface,hw:int,hh:int):
-        fh = FONT_M.char_array[0].get_height()
+        fh = FONT.char_array[0].get_height()
 
 
         wc = (len(str(self.text)))*1.1*fh
-        rendered_font = FONT_M.render_text(str(self.text))
+        rendered_font = FONT.render_text(str(self.text))
         w , h = wc,fh * 1.1*2
         tmp = Surface((w,h),SRCALPHA)
         hover = False
@@ -51,12 +51,12 @@ class ButtonElements:
     def reset_press(self):
         self.pressed = [False,False,False]
     def draw_all(self,surf:Surface,font:Font,hw:int,hh:int):
-        fh = font.get_height()
+        fh = FONT.char_array[0].get_height()
         position = (hh*2)//6
 
         for idx,text in enumerate(self.texts):
             wc = (len(str(text)))*1.1*fh
-            rendered_font = font.render(str(text),True,Color("#242424"))
+            rendered_font = FONT.render_text(str(text))
             w , h = wc,fh * 1.1*2
             tmp = Surface((w,h),SRCALPHA)
             hover = False

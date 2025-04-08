@@ -26,8 +26,8 @@ class App:
         self.font = pg.font.Font(pg.font.get_default_font(),40)
         
         #Load textures
-        self.star_texture = pg.transform.scale(pg.image.load("bin\\img\\star.png"),(48,48))
-        self.nostar_texture = pg.transform.scale(pg.image.load("bin\\img\\nostar.png"),(48,48))
+        self.star_texture = pg.transform.scale(pg.image.load("bin\\img\\star.png"),(96,96))
+        self.nostar_texture = pg.transform.scale(pg.image.load("bin\\img\\nostar.png"),(96,96))
         self.logo = pg.image.load("logo.ico")
         
         #The Animations for the stars & score
@@ -47,12 +47,14 @@ class App:
         self.ani_wait_2 = randint(0,3)
         
         self.menu_btn = Button("PLAY")
+        self.star_btn = Button("NEXT")
         
         self.transition_image = None
         
         self.btns = ButtonElements()
         self.state = "menu"
         self.delta_time = 0
+        self.points_temp = 0
         
     def music_runner(self):
         pg.mixer.music.load("bin\\bgm.mp3")
@@ -72,14 +74,17 @@ class App:
                     self.menu()
                 case "game":
                     self.word_guess_predefined()
-                    self.draw_stars()
-                    self.draw_points()
+                    
                 case "menu_to_game":
                     self.animate_menu_to_game()
+                case "game_to_star":
+                    self.game_to_star_screen()
+                case "star":
+                    self.star_screen()
             
             self.delta_time = perf_counter() - dt
             
-            if not self.state == "menu_to_game": pg.display.update()
+            pg.display.update()
             self.check_events()
             
     def draw_points(self):
@@ -88,7 +93,7 @@ class App:
             title_font,
             (
                 (self.WIDTH//2) - (title_font.get_width()//2),
-                (self.HEIGHT*.3) - (title_font.get_height()//2) + (title_font.get_height() * 0.5 * self.start_bounce_animation_score.update()*self.delta_time*50)
+                (self.HEIGHT*.5) - (title_font.get_height()//2) + (title_font.get_height() * 0.5 * self.start_bounce_animation_score.update()*self.delta_time*50)
                 ))
         
     def draw_background(self):
@@ -119,15 +124,12 @@ class App:
             150 + star_height + (-star_height * self.start_bounce_animation_star1.update()*self.delta_time*100),
             150 + (star_height) + (-star_height * self.start_bounce_animation_star3.update()*self.delta_time*100))
         
-        textures = [self.star_texture if self.wiki.remaining >= i + 1 else self.nostar_texture for i in range(3)]
+        textures = [self.star_texture if self.points_temp >= i + 1 else self.nostar_texture for i in range(3)]
         
         self.WINDOW.blit(textures[1],((self.WIDTH//2)-(self.star_texture.get_width()//2),animations[0]))
         self.WINDOW.blit(textures[0],((self.WIDTH//2)-((self.star_texture.get_width())*2),animations[1]))
         self.WINDOW.blit(textures[2],((self.WIDTH//2)+((self.star_texture.get_width())),animations[2]))
         
-    def draw_input(self) -> None:
-        pass
-    
     def draw_title_bar(self) -> None:
         pg.draw.rect(
             self.WINDOW,
@@ -149,21 +151,33 @@ class App:
         self.draw_title_bar()
  
         self.btns.draw_all(self.WINDOW,self.font,self.WIDTH//2 , self.HEIGHT//2)
+        res = False
         if any(self.btns.pressed):
             score = self.wiki.end_word_count_predefined(int(self.btns.texts[self.btns.pressed.index(True)]))
             self.btns.reset_press()
             if score:
+                self.points_temp = score
                 MIXER("bin\\yay.wav").play()
                 self.wiki.points += score
                 self.btns.set_texts(self.wiki.start_word_count_predefined())
                 self.wiki.reset_and_drive()
-            
+                res = True
             elif not self.wiki.remaining:
+                self.points_temp = score
                 MIXER("bin\\nope.wav").play()
                 self.btns.set_texts(self.wiki.start_word_count_predefined())
                 self.wiki.reset_and_drive()
+                res = True
             else:
                 MIXER("bin\\nope.wav").play()
+        if res:
+            surf = self.WINDOW.copy()
+            self.transition_image = pg.Surface((self.WIDTH,self.HEIGHT*2))
+            self.transition_image.fill(pg.Color("#e85f58"))
+            self.star_btn.blocked = True
+            self.star_btn.reset_press()
+            self.transition_image.blit(surf,(0,0))
+            self.state = "star"
     
     def animate_menu_to_game(self):
         self.WINDOW.fill(pg.Color("#e58f58"))
@@ -172,9 +186,9 @@ class App:
 
         self.WINDOW.blit(self.transition_image,(0,pos))
         pg.display.update()
-        print(anim,)
         if anim > 1:
             self.state = "game"
+            self.menu_to_game_animation = MenuAnimation()
     
     def menu(self):
         self.draw_background()
@@ -204,10 +218,30 @@ class App:
             MIXER("bin\\yay.wav").play()
             self.btns.blocked = True
             self.state = "menu_to_game"
+
     def game_to_star_screen(self):
-        pass
+        self.WINDOW.fill(pg.Color("#e58f58"))
+        anim = self.menu_to_game_animation.update(self.delta_time)
+        pos = self.HEIGHT*anim*-1
+
+        self.WINDOW.blit(self.transition_image,(0,pos))
+        pg.display.update()
+        if anim > 1:
+            self.state = "star"
     def star_screen(self):
-        pass
+        self.draw_background()
+        
+        pg.draw.rect(self.WINDOW,pg.Color('#fcfcfc'),(self.WIDTH*.2,self.HEIGHT*.1,self.WIDTH*.6,self.HEIGHT*.8),border_radius=15)
+        
+        self.draw_stars()
+        self.draw_points()
+        self.star_btn.draw_all(self.WINDOW,self.WIDTH//2,self.HEIGHT*.8)
+        if self.star_btn.pressed:
+            MIXER("bin\\yay.wav").play()
+            self.btns.blocked = True
+            self.btns.reset_press()
+            self.state = "game"
+        
     def star_screen_to_game(self):
         pass
     def check_events(self):

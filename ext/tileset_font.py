@@ -2,13 +2,14 @@ from pygame import Surface,image,transform,SRCALPHA
 from string import digits,ascii_lowercase
 
 class Font:
-    surface : Surface = image.load("bin\\tilesets\\char_set.png")
-    chars : str = digits + ascii_lowercase + "!?*\\/().:-+,"
+    
 
     def __init__(self, 
                  char_size: int = 512,
                  draw_size: int = 30
                  ) -> None:
+        self.surface : Surface = image.load("bin\\tilesets\\char_set.png")
+        self.chars : str = digits + ascii_lowercase + "!?*\\/().:-+,"
         self.size : int = draw_size
         self.char_array = []
         for char in range(len(self.chars)):
@@ -28,4 +29,4 @@ class Font:
             surf.blit(self.char_array[self.chars.index(char)],(index*self.size,0))
         return surf
 FONT = Font()
-FONT_M = Font(draw_size=60)
+FONT_M = Font(draw_size=128)
