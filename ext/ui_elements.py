@@ -1,4 +1,5 @@
-from pygame import K_RETURN,K_BACKSPACE,Color,Font,Surface,draw
+from pygame import K_RETURN,K_BACKSPACE,Color,Font,Surface,draw,mouse
+
 class InputElement:
     def __init__(self, ):
         self.input = ""
@@ -20,3 +21,13 @@ class InputElement:
             self.input += char
     def get(self) -> str:
         return self.input
+class ButtonElement:
+    def __init__(self,
+                 pos: tuple[int,int],
+                 dest: tuple[int,int]):
+        self.pos = pos
+        self.dest = dest
+        self.pressed = False
+    def update(self):
+        pos = mouse.get_pos()
+        
