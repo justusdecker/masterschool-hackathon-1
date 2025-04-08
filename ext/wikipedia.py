@@ -41,25 +41,29 @@ def get_wiki_text_exclude(link: str,words: Iterable[str]):
     for word in words:
         text.remove(word)
     return " ".join(text)
+
 class WikipediaGame:
     def __init__(self):
-        self.current_game = 1
         self.wc = 0
         self.current_page = ""
         self.remaining = 3
         self.points = 0
-        self.links = {"Minecraft"}
+        self.links = {"Minecraft","Terraria"}
+        self.current_game = 0
         
-    def get_challenge_title(self):
-        match self.current_game:
-            case 0:
-                return f"How many words has the {self.current_page} page?"
-            case 1:
-                return f"Wordcounter in {self.current_page}"
-    def random_page(self):
+    def get_challenge_title(self) -> str:
+        return f"Wordcounter in {self.current_page}"
+    
+    def random_page(self) -> str:
+        "Returns a random ``link`` from ``links``"
         return list(self.links)[randint(0,len(self.links)-1)]
     
     def start_word_count_predefined(self):
+        """
+        SWCP
+        -------
+        Create a new game
+        """
         self.remaining = 3
         page = self.random_page()
         self.wc = get_wiki_text(page).count(" ") + 1
@@ -70,10 +74,24 @@ class WikipediaGame:
         return ret
         
     def end_word_count_predefined(self,inp:int) -> bool:
+        """
+        EWCP
+        ------
+        
+        Returns the user score in this round
+        above 0 is okay
+        0: the player lost
+        """
         self.remaining -= 1
         if inp == self.wc: return (self.remaining + 1 if self.remaining else 1)
         else: return 0
     def reset_and_drive(self):
+        """
+        Create a "ROAD"
+        This is used to navigate further websites without predefining tousands of links
+        The result is each time random
+        
+        """
         new_path = get_wiki_links(self.current_page)
         
         for i in range(4096):
