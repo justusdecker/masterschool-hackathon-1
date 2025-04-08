@@ -46,7 +46,7 @@ def get_wiki_text_exclude(link: str,words: Iterable[str]):
 print(get_wiki_text("Österreich"))
 class WikipediaGame:
     def __init__(self):
-        self.current_game = 0
+        self.current_game = 1
         self.wc = 0
         self.current_page = ""
         self.remaining = 3
@@ -73,7 +73,6 @@ class WikipediaGame:
             else:
                 title = ""
     def end_word_count(self,inp:int) -> bool:
-        
         self.remaining -= 1
         if inp == self.wc: return 3
         elif inp < self.wc * 1.1 and inp > self.wc * 0.9: return 2

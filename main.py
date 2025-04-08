@@ -1,7 +1,7 @@
 import pygame as pg
 from ext.wikipedia import WikipediaGame
 from ext.animation import StarBouncing
-from ext.ui_elements import InputElement
+from ext.ui_elements import InputElement, ButtonElements
 from time import perf_counter
 from random import randint
 pg.mixer.init()
@@ -28,9 +28,15 @@ class App:
         
         self.animation_pos_1 = self.WIDTH
         self.animation_pos_2 = self.WIDTH
+        
         self.ani_wait_1 = randint(0,3)
         self.ani_wait_2 = randint(0,3)
+        
+        self.btns = ButtonElements()
+        self.btns.set_texts(["test","Hello","No"])
         self.delta_time = 0
+        
+        
         
     def run(self):
         self.wiki.start_word_count()
@@ -42,12 +48,15 @@ class App:
             match self.wiki.current_game:
                 case 0:
                     self.word_guess()
+                case 1:
+                    self.word_guess_predefined()
             
             self.delta_time = perf_counter() - dt
             self.draw_stars()
             pg.display.update()
             self.check_events()
     def draw_background(self):
+        self.WINDOW.fill(pg.Color("#e85f58"),(0,0,self.WIDTH,self.HEIGHT))
         if self.ani_wait_1 > 0:
             self.ani_wait_1 -= self.delta_time
         else:
@@ -102,10 +111,14 @@ class App:
                 (self.WIDTH//2) - (title_font.get_width()//2),
                 (self.HEIGHT//8) - (title_font.get_height()//2)
                 ))
+    
     def word_guess_predefined(self):
-        pass
+        self.draw_background()
+        self.draw_title_bar()
+ 
+        self.btns.draw_all(self.WINDOW,self.font,self.WIDTH//2 , self.HEIGHT//2)
+        
     def word_guess(self): 
-        self.WINDOW.fill(pg.Color("#e85f58"),(0,0,self.WIDTH,self.HEIGHT))
         self.draw_background()
         self.draw_title_bar()
         self.input.draw(self.WINDOW,self.font,self.WIDTH//2 , self.HEIGHT//2)
