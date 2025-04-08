@@ -21,15 +21,14 @@ def get_wiki_text(link: str) -> str:
     soup = get_soup("https://de.wikipedia.org/wiki/" + link)
     return soup.text    #Remove HTML text. Returns only text
 
-def get_wiki_links(link: str) -> list[str,str]:
+def get_wiki_links(link: str) -> list[str]:
     found = get_soup("https://de.wikipedia.org/wiki/" + link).find_all("a")
     links = []
     for i in found:
-        link = i.get("href")
         
-        if not link: continue
-        if not i.attrs['href']: continue
-        href = str(i.attrs['href'])
+        href = str(i.attrs['href'] if "href" in i.attrs else False)
+        if not href: continue
+        
         if href.startswith("/wiki/") and \
             not href.endswith(".svg") and \
                 not "wikipedia" in href.lower() and \
@@ -44,7 +43,7 @@ def get_wiki_text_exclude(link: str,words: Iterable[str]):
         text.remove(word)
     return " ".join(text)
 
-
+print(get_wiki_text("Österreich"))
 class WikipediaGame:
     def __init__(self):
         self.current_game = 0

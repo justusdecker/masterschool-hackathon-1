@@ -1,6 +1,7 @@
 import pygame as pg
 from ext.wikipedia import WikipediaGame
 from ext.animation import StarBouncing
+from ext.ui_elements import InputElement
 from time import perf_counter
 from random import randint
 pg.mixer.init()
@@ -14,7 +15,7 @@ class App:
     is_running = True
     CLK = pg.Clock()
     def __init__(self):
-        self.inp = ""
+        self.input = InputElement()
         pg.font.init()
         self.wiki = WikipediaGame()
         self.font = pg.font.Font(pg.font.get_default_font(),40)
@@ -101,65 +102,42 @@ class App:
                 (self.WIDTH//2) - (title_font.get_width()//2),
                 (self.HEIGHT//8) - (title_font.get_height()//2)
                 ))
-        
-    def word_guess(self):
-        hw,hh = self.WIDTH//2 , self.HEIGHT//2
-        if self.inp:
-            input_draw = self.inp
-            draw_color = pg.Color("#242424")
-        else:
-            input_draw = "Enter your choice"
-            draw_color = pg.Color("#484848")
-            
-        self.WINDOW.fill(
-            pg.Color("#e85f58"),
-            (0,0,self.WIDTH,self.HEIGHT)
-            )
-        
+    def word_guess_predefined(self):
+        pass
+    def word_guess(self): 
+        self.WINDOW.fill(pg.Color("#e85f58"),(0,0,self.WIDTH,self.HEIGHT))
         self.draw_background()
-        
         self.draw_title_bar()
+        self.input.draw(self.WINDOW,self.font,self.WIDTH//2 , self.HEIGHT//2)
         
-        w_calc = (len(input_draw) if input_draw else 1)*1.1*self.font.get_height()
-        
-        pg.draw.rect(self.WINDOW,pg.Color("#fcfcfc"),(hw - (w_calc//2),hh - (self.font.get_height() * 1.1),w_calc,(self.font.get_height() * 1.1)*2),border_radius=15)
-        
-        font = self.font.render(input_draw,True,draw_color)
-        
-        self.WINDOW.blit(font,(hw - (font.get_width()//2),hh - (font.get_height()//2)))
     def more_or_less(self):
         self.WINDOW.fill(pg.Color("#e85f58"),(0,0,self.WIDTH // 2,self.HEIGHT))
         self.WINDOW.fill(pg.Color("#58c8e8"),(self.WIDTH // 2,0,self.WIDTH,self.HEIGHT))
+        
     def check_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
                 self.is_running = False
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_RETURN and self.inp:
-                    score = self.wiki.end_word_count(int(self.inp))
-                    if not self.wiki.remaining:
-                        MIXER("bin\\nope.wav").play()
-                        self.inp = ""
-                        self.wiki.start_word_count()
-                        self.wiki.reset_and_drive()
-                    elif score:
-                        MIXER("bin\\yay.wav").play()
-                        self.wiki.points += score
-                        self.inp = ""
-                        self.wiki.start_word_count()
-                        self.wiki.reset_and_drive()
-                    else:
+            if self.wiki.current_game == 0:
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_RETURN and self.input.get():
+                        score = self.wiki.end_word_count(int(self.input.get()))
+                        self.input.input = ""
+                        if not self.wiki.remaining:
+                            MIXER("bin\\nope.wav").play()
+                            self.wiki.start_word_count()
+                            self.wiki.reset_and_drive()
+                        elif score:
+                            MIXER("bin\\yay.wav").play()
+                            self.wiki.points += score
+                            self.wiki.start_word_count()
+                            self.wiki.reset_and_drive()
+                        else:
+                            
+                            MIXER("bin\\nope.wav").play()
                         
-                        MIXER("bin\\nope.wav").play()
-                    
-                if event.key == pg.K_BACKSPACE:
-                    self.inp = self.inp[:-1]
-                    continue
-                try: char = chr(event.key)
-                except ValueError: continue
-                if char in "0123456789":
-                    self.inp += char
+                    self.input.update_text(event.key)
 if __name__ == "__main__":
     APP = App()
     APP.run()
