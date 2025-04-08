@@ -33,21 +33,20 @@ class App:
         self.ani_wait_2 = randint(0,3)
         
         self.btns = ButtonElements()
-        self.btns.set_texts(["test","Hello","No"])
+        
         self.delta_time = 0
         
         
         
     def run(self):
-        self.wiki.start_word_count()
+        
+        self.btns.set_texts(self.wiki.start_word_count_predefined())
         pg.mixer.music.load("bin\\bgm.mp3")
         pg.mixer.music.play(-1)
         while self.is_running:
             dt = perf_counter()
             self.CLK.tick(30)
             match self.wiki.current_game:
-                case 0:
-                    self.word_guess()
                 case 1:
                     self.word_guess_predefined()
             
@@ -117,11 +116,22 @@ class App:
         self.draw_title_bar()
  
         self.btns.draw_all(self.WINDOW,self.font,self.WIDTH//2 , self.HEIGHT//2)
-        
-    def word_guess(self): 
-        self.draw_background()
-        self.draw_title_bar()
-        self.input.draw(self.WINDOW,self.font,self.WIDTH//2 , self.HEIGHT//2)
+        if any(self.btns.pressed):
+            score = self.wiki.end_word_count_predefined(int(self.btns.texts[self.btns.pressed.index(True)]))
+            self.btns.reset_press()
+            print(score)
+            if score:
+                MIXER("bin\\yay.wav").play()
+                self.wiki.points += score
+                self.btns.set_texts(self.wiki.start_word_count_predefined())
+                self.wiki.reset_and_drive()
+            
+            elif not self.wiki.remaining:
+                MIXER("bin\\nope.wav").play()
+                self.btns.set_texts(self.wiki.start_word_count_predefined())
+                self.wiki.reset_and_drive()
+            else:
+                MIXER("bin\\nope.wav").play()
         
     def more_or_less(self):
         self.WINDOW.fill(pg.Color("#e85f58"),(0,0,self.WIDTH // 2,self.HEIGHT))
@@ -132,25 +142,6 @@ class App:
             if event.type == pg.QUIT:
                 pg.quit()
                 self.is_running = False
-            if self.wiki.current_game == 0:
-                if event.type == pg.KEYDOWN:
-                    if event.key == pg.K_RETURN and self.input.get():
-                        score = self.wiki.end_word_count(int(self.input.get()))
-                        self.input.input = ""
-                        if not self.wiki.remaining:
-                            MIXER("bin\\nope.wav").play()
-                            self.wiki.start_word_count()
-                            self.wiki.reset_and_drive()
-                        elif score:
-                            MIXER("bin\\yay.wav").play()
-                            self.wiki.points += score
-                            self.wiki.start_word_count()
-                            self.wiki.reset_and_drive()
-                        else:
-                            
-                            MIXER("bin\\nope.wav").play()
-                        
-                    self.input.update_text(event.key)
 if __name__ == "__main__":
     APP = App()
     APP.run()

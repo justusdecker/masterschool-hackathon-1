@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from ext.wiki_links import LINKS
 from typing import Iterable
-from random import randint
+from random import randint,shuffle
 """
 WFAPI - Wikipedia fetching API
 (c) 2025 - Justus Decker
@@ -42,8 +42,6 @@ def get_wiki_text_exclude(link: str,words: Iterable[str]):
     for word in words:
         text.remove(word)
     return " ".join(text)
-
-print(get_wiki_text("Österreich"))
 class WikipediaGame:
     def __init__(self):
         self.current_game = 1
@@ -51,31 +49,38 @@ class WikipediaGame:
         self.current_page = ""
         self.remaining = 3
         self.points = 0
+        self.links = {"Minecraft"}
         
     def get_challenge_title(self):
         match self.current_game:
             case 0:
                 return f"How many words has the {self.current_page} page?"
+            case 1:
+                return f"How many words has the {self.current_page} page?"
     def random_page(self):
-        return LINKS[randint(0,len(LINKS)-1)]
-    def start_word_count(self):
+        return list(self.links)[randint(0,len(self.links)-1)]
+    
+    def start_word_count_predefined(self):
         self.remaining = 3
         page = self.random_page()
         self.wc = get_wiki_text(page).count(" ") + 1
         self.current_page = page.split("/")[-1]
+        ret = [randint(self.wc,self.wc * 2) for i in range(2)]
+        ret.append(self.wc)
+        shuffle(ret)
+        return ret
+        
+    def end_word_count_predefined(self,inp:int) -> bool:
+        self.remaining -= 1
+        print(inp,self.wc)
+        if inp == self.wc: return (self.remaining if self.remaining else 1)
+        else: return 0
     def reset_and_drive(self):
         new_path = get_wiki_links(self.current_page)
-        title = ""
-        while not title:
-            title = new_path[randint(0,len(new_path)-1)]
-            if len(title) + 29 < 42:
-                LINKS.append(title)
-            else:
-                title = ""
-    def end_word_count(self,inp:int) -> bool:
-        self.remaining -= 1
-        if inp == self.wc: return 3
-        elif inp < self.wc * 1.1 and inp > self.wc * 0.9: return 2
-        elif inp < self.wc * 1.2 and inp > self.wc * 0.8: return 1
-        else: return 0
+        
+        for i in range(4096):
+            if len(new_path) - 1 < i or len(self.links) >= 4096:
+                break
+            if len(new_path[i]) + 29 < 42:
+                self.links.add(new_path[i])
         
