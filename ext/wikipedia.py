@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-from ext.wiki_links import LINKS
 from typing import Iterable
 from random import randint,shuffle
 """
@@ -13,7 +12,7 @@ def get_soup(link:str) -> BeautifulSoup:
     Get the Website content with HTML Tags
     """
     return BeautifulSoup(
-        requests.get(f"{link}").content, 
+        requests.get(f"{link}").content,
         "html.parser"
         )
     
@@ -56,7 +55,7 @@ class WikipediaGame:
             case 0:
                 return f"How many words has the {self.current_page} page?"
             case 1:
-                return f"How many words has the {self.current_page} page?"
+                return f"Wordcounter in {self.current_page}"
     def random_page(self):
         return list(self.links)[randint(0,len(self.links)-1)]
     
@@ -65,15 +64,14 @@ class WikipediaGame:
         page = self.random_page()
         self.wc = get_wiki_text(page).count(" ") + 1
         self.current_page = page.split("/")[-1]
-        ret = [randint(self.wc,self.wc * 2) for i in range(2)]
+        ret = [randint(self.wc//2,self.wc * 2) for i in range(2)]
         ret.append(self.wc)
         shuffle(ret)
         return ret
         
     def end_word_count_predefined(self,inp:int) -> bool:
         self.remaining -= 1
-        print(inp,self.wc)
-        if inp == self.wc: return (self.remaining if self.remaining else 1)
+        if inp == self.wc: return (self.remaining + 1 if self.remaining else 1)
         else: return 0
     def reset_and_drive(self):
         new_path = get_wiki_links(self.current_page)

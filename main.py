@@ -2,6 +2,7 @@ import pygame as pg
 from ext.wikipedia import WikipediaGame
 from ext.animation import StarBouncing
 from ext.ui_elements import InputElement, ButtonElements
+from ext.tileset_font import FONT,FONT_M
 from time import perf_counter
 from random import randint
 pg.mixer.init()
@@ -52,8 +53,17 @@ class App:
             
             self.delta_time = perf_counter() - dt
             self.draw_stars()
+            self.draw_points()
             pg.display.update()
             self.check_events()
+    def draw_points(self):
+        title_font = FONT_M.render_text(str(self.wiki.points))
+        self.WINDOW.blit(
+            title_font,
+            (
+                (self.WIDTH//2) - (title_font.get_width()//2),
+                (self.HEIGHT*.3) - (title_font.get_height()//2) + (title_font.get_height() * 0.5 * self.start_bounce_animation_star3.update())
+                ))
     def draw_background(self):
         self.WINDOW.fill(pg.Color("#e85f58"),(0,0,self.WIDTH,self.HEIGHT))
         if self.ani_wait_1 > 0:
@@ -98,12 +108,8 @@ class App:
             ((self.WIDTH * .1),self.HEIGHT//16,(self.WIDTH*.8),self.HEIGHT//8),
             border_radius=15
             )
-        title_font = self.font.render(
-            self.wiki.get_challenge_title(),
-            True,
-            pg.Color("#242424")
-            )
         
+        title_font = FONT.render_text(self.wiki.get_challenge_title())
         self.WINDOW.blit(
             title_font,
             (
@@ -119,7 +125,6 @@ class App:
         if any(self.btns.pressed):
             score = self.wiki.end_word_count_predefined(int(self.btns.texts[self.btns.pressed.index(True)]))
             self.btns.reset_press()
-            print(score)
             if score:
                 MIXER("bin\\yay.wav").play()
                 self.wiki.points += score
