@@ -6,8 +6,7 @@ from ext.tileset_font import FONT,FONT_M
 from time import perf_counter
 from random import randint
 from ctypes import windll
-from ext.bgm import MusicWrapper
-from threading import Thread
+from ext.bgm import change_title
 MIXER = pg.mixer.Sound
 class App:
     """
@@ -57,8 +56,7 @@ class App:
         self.state = "menu"
         self.delta_time = 0
         self.points_temp = 0
-        
-        self.music_timer = MusicWrapper(self)
+
     def music_runner(self):
         pg.mixer.music.load("bin\\bgm.mp3")
         pg.mixer.music.play(-1)
@@ -67,7 +65,7 @@ class App:
         self.btns.set_texts(self.wiki.start_word_count_predefined())    #Set the first challenge before enter the loop!
 
         while self.is_running:
-            self.music_timer.change_title()
+            change_title()
             dt = perf_counter()
             
             self.CLK.tick(60)
