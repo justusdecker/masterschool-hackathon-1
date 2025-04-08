@@ -50,7 +50,7 @@ class ButtonElements:
         self.blocked = False
     def reset_press(self):
         self.pressed = [False,False,False]
-    def draw_all(self,surf:Surface,font:Font,hw:int,hh:int):
+    def draw_all(self,surf:Surface,hw:int,hh:int):
         fh = FONT.char_array[0].get_height()
         position = (hh*2)//6
 

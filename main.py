@@ -5,7 +5,9 @@ from ext.ui_elements import ButtonElements,Button
 from ext.tileset_font import FONT,FONT_M
 from time import perf_counter
 from random import randint
-pg.mixer.init()
+from ctypes import windll
+from ext.bgm import MusicWrapper
+from threading import Thread
 MIXER = pg.mixer.Sound
 class App:
     """
@@ -56,16 +58,16 @@ class App:
         self.delta_time = 0
         self.points_temp = 0
         
+        self.music_timer = MusicWrapper(self)
     def music_runner(self):
         pg.mixer.music.load("bin\\bgm.mp3")
         pg.mixer.music.play(-1)
         
     def run(self):
         self.btns.set_texts(self.wiki.start_word_count_predefined())    #Set the first challenge before enter the loop!
-        
-        self.music_runner()
-        
+
         while self.is_running:
+            self.music_timer.change_title()
             dt = perf_counter()
             
             self.CLK.tick(60)
@@ -83,7 +85,7 @@ class App:
                     self.star_screen()
             
             self.delta_time = perf_counter() - dt
-            
+
             pg.display.update()
             self.check_events()
             
@@ -120,9 +122,9 @@ class App:
         star_height = self.star_texture.get_height() *.5
             
         animations = (
-            150 + (-star_height * self.start_bounce_animation_star2.update()*self.delta_time*100),
-            150 + star_height + (-star_height * self.start_bounce_animation_star1.update()*self.delta_time*100),
-            150 + (star_height) + (-star_height * self.start_bounce_animation_star3.update()*self.delta_time*100))
+            (self.HEIGHT*.3) + (-star_height * self.start_bounce_animation_star2.update()*self.delta_time*80),
+            (self.HEIGHT*.3) + star_height + (-star_height * self.start_bounce_animation_star1.update()*self.delta_time*80),
+            (self.HEIGHT*.3) + (star_height) + (-star_height * self.start_bounce_animation_star3.update()*self.delta_time*80))
         
         textures = [self.star_texture if self.points_temp >= i + 1 else self.nostar_texture for i in range(3)]
         
@@ -150,7 +152,7 @@ class App:
         self.draw_background()
         self.draw_title_bar()
  
-        self.btns.draw_all(self.WINDOW,self.font,self.WIDTH//2 , self.HEIGHT//2)
+        self.btns.draw_all(self.WINDOW,self.WIDTH//2 , self.HEIGHT//2)
         res = False
         if any(self.btns.pressed):
             score = self.wiki.end_word_count_predefined(int(self.btns.texts[self.btns.pressed.index(True)]))
@@ -178,6 +180,7 @@ class App:
             self.star_btn.reset_press()
             self.transition_image.blit(surf,(0,0))
             self.state = "star"
+
     
     def animate_menu_to_game(self):
         self.WINDOW.fill(pg.Color("#e58f58"))
@@ -219,6 +222,7 @@ class App:
             self.btns.blocked = True
             self.state = "menu_to_game"
 
+
     def game_to_star_screen(self):
         self.WINDOW.fill(pg.Color("#e58f58"))
         anim = self.menu_to_game_animation.update(self.delta_time)
@@ -228,11 +232,17 @@ class App:
         pg.display.update()
         if anim > 1:
             self.state = "star"
+            
+    
     def star_screen(self):
         self.draw_background()
         
-        pg.draw.rect(self.WINDOW,pg.Color('#fcfcfc'),(self.WIDTH*.2,self.HEIGHT*.1,self.WIDTH*.6,self.HEIGHT*.8),border_radius=15)
         
+        pg.draw.rect(self.WINDOW,pg.Color('#fcfcfc'),(self.WIDTH*.2,self.HEIGHT*.1,self.WIDTH*.6,self.HEIGHT*.8),border_radius=15)
+        pg.draw.rect(self.WINDOW,pg.Color('#cfcfcf'),(self.WIDTH*.2,self.HEIGHT*.1,self.WIDTH*.6,self.HEIGHT*.1),border_top_left_radius=15,border_top_right_radius=15)
+        font = FONT.render_text("Congratulation")
+        hw,hh,fw,fh = self.WIDTH//2,self.HEIGHT*.15,font.get_width()//2,font.get_height()//2
+        self.WINDOW.blit(font,(hw-fw,hh-fh))
         self.draw_stars()
         self.draw_points()
         self.star_btn.draw_all(self.WINDOW,self.WIDTH//2,self.HEIGHT*.8)
@@ -241,10 +251,16 @@ class App:
             self.btns.blocked = True
             self.btns.reset_press()
             self.state = "game"
+
         
     def star_screen_to_game(self):
         pass
     def check_events(self):
+        if self.wiki.failed:
+            self.is_running = False
+            pg.quit()
+            windll.user32.MessageBoxW(0, "Check your connection & try again!", "No Connection!", 16)
+            return
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
